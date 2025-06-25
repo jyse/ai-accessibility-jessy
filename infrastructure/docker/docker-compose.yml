@@ -1,0 +1,92 @@
+# infrastructure/docker/docker-compose.yml
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: accessibility_db
+    environment:
+      POSTGRES_DB: accessibility_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: accessibility_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - accessibility_network
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: accessibility_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - accessibility_network
+
+  # Next.js Dashboard (development)
+  nextjs:
+    build:
+      context: ../../frontend/dashboard
+      dockerfile: Dockerfile.dev
+    container_name: accessibility_nextjs
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:accessibility_password@postgres:5432/accessibility_db
+      - NEXTAUTH_SECRET=your-secret-key
+      - FASTAPI_URL=http://fastapi:8000
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ../../frontend/dashboard:/app
+      - /app/node_modules
+    networks:
+      - accessibility_network
+
+  # FastAPI Backend
+  fastapi:
+    build:
+      context: ../../backend/fastapi-server
+      dockerfile: Dockerfile
+    container_name: accessibility_fastapi
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:accessibility_password@postgres:5432/accessibility_db
+      - REDIS_URL=redis://redis:6379
+      - MODEL_PATH=/app/models
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ../../backend/fastapi-server:/app
+      - model_storage:/app/models
+    networks:
+      - accessibility_network
+
+  # pgAdmin for database management (optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: accessibility_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@accessibility.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - accessibility_network
+
+volumes:
+  postgres_data:
+  model_storage:
+
+networks:
+  accessibility_network:
+    driver: bridge
