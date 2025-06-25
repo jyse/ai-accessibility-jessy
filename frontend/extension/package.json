@@ -1,29 +1,32 @@
 {
-  "name": "extension",
+  "name": "ai-accessibility-extension",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "type": "module",
+  "description": "AI-powered accessibility improvements for websites",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite build --watch",
+    "build": "vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
   },
-  "keywords": [],
+  "keywords": ["accessibility", "ai", "chrome-extension"],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^4.6.0",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.523.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "tailwind-merge": "^3.3.1",
-    "typescript": "^5.8.3",
-    "vite": "^7.0.0",
-    "zustand": "^5.0.5"
+    "zustand": "^5.0.5",
+    "lucide-react": "^0.523.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "@types/chrome": "^0.0.326",
+    "@vitejs/plugin-react": "^4.6.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.10"
