@@ -1,5 +1,4 @@
-// Content script
-console.log('AI Accessibility Extension content script loaded');
+// Content script for CSS injection and page analysis
+console.log("AI Accessibility Extension content script loaded");
 
-// This will handle CSS injection and page analysis
 export {};
