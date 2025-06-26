@@ -1,582 +1,790 @@
-// src/popup/index.tsx - With inline styles as Tailwind backup
+// src/popup/index.tsx - Proper TailwindCSS + Zustand Version
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { useAccessibilityStore } from "../shared/store";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
 import "../styles/globals.css";
 
-const styles = {
-  container: {
-    width: "384px",
-    backgroundColor: "white",
-    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-    borderRadius: "8px",
-    overflow: "hidden"
-  },
-  header: {
-    background: "linear-gradient(to right, #7c3aed, #8b5cf6, #3b82f6)",
-    padding: "24px"
-  },
-  headerCenter: {
-    textAlign: "center" as const
-  },
-  iconContainer: {
-    width: "48px",
-    height: "48px",
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    margin: "0 auto 12px auto"
-  },
-  title: {
-    fontSize: "20px",
-    fontWeight: "600",
-    color: "white",
-    marginBottom: "4px"
-  },
-  subtitle: {
-    color: "rgba(196, 181, 253, 1)",
-    fontSize: "14px"
-  },
-  content: {
-    padding: "24px"
-  },
-  welcomeSection: {
-    textAlign: "center" as const,
-    marginBottom: "24px"
-  },
-  welcomeTitle: {
-    fontSize: "18px",
-    fontWeight: "500",
-    color: "#1f2937",
-    marginBottom: "8px"
-  },
-  welcomeText: {
-    color: "#6b7280",
-    fontSize: "14px"
-  },
-  section: {
-    marginBottom: "24px"
-  },
-  label: {
-    display: "block",
-    fontSize: "14px",
-    fontWeight: "500",
-    color: "#374151",
-    marginBottom: "12px"
-  },
-  buttonGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "8px"
-  },
-  button: {
-    padding: "12px",
-    borderRadius: "8px",
-    border: "2px solid #e5e7eb",
-    backgroundColor: "white",
-    color: "#6b7280",
-    fontSize: "14px",
-    fontWeight: "500",
-    cursor: "pointer",
-    transition: "all 0.2s"
-  },
-  buttonActive: {
-    border: "2px solid #8b5cf6",
-    backgroundColor: "#f3f4f6",
-    color: "#7c3aed"
-  },
-  toggleContainer: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "16px"
-  },
-  toggleLabel: {
-    fontSize: "14px",
-    fontWeight: "500",
-    color: "#374151"
-  },
-  toggle: {
-    position: "relative" as const,
-    display: "inline-flex",
-    height: "24px",
-    width: "44px",
-    alignItems: "center",
-    borderRadius: "9999px",
-    cursor: "pointer",
-    transition: "background-color 0.2s"
-  },
-  toggleBall: {
-    display: "inline-block",
-    height: "16px",
-    width: "16px",
-    borderRadius: "50%",
-    backgroundColor: "white",
-    transition: "transform 0.2s"
-  },
-  mainButton: {
-    width: "100%",
-    background: "linear-gradient(to right, #7c3aed, #3b82f6)",
-    color: "white",
-    padding: "12px 16px",
-    borderRadius: "8px",
-    fontWeight: "500",
-    border: "none",
-    cursor: "pointer",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-  }
-};
+// Types
+interface UserProfile {
+  id: string;
+  fontSize: "normal" | "large" | "xl";
+  contrast: "normal" | "high" | "very_high";
+  motionSensitive: boolean;
+  screenReader: boolean;
+  autoApply: boolean;
+  aiLearning: boolean;
+  createdAt: string;
+}
+
+interface AccessibilityIssue {
+  type: "font-size" | "contrast" | "click-targets" | "aria-labels";
+  severity: "low" | "medium" | "high";
+  description: string;
+  count: number;
+}
+
+interface AppliedChange {
+  id: string;
+  type: string;
+  description: string;
+  cssRule?: string;
+  ariaFix?: any;
+  appliedAt: string;
+}
 
 function App() {
-  const [isSetupComplete, setIsSetupComplete] = React.useState(false);
-  const [userProfile, setUserProfile] = React.useState(null);
+  const {
+    appState,
+    userProfile,
+    detectedIssues,
+    appliedChanges,
+    customFeedback,
+    isProcessing,
+    setAppState,
+    setUserProfile,
+    setDetectedIssues,
+    setAppliedChanges,
+    setCustomFeedback,
+    setIsProcessing,
+    initializeApp,
+    scanForIssues,
+    handleCompleteOnboarding,
+    handleQuickFix,
+    handleCustomFeedback
+  } = useAccessibilityStore();
 
   React.useEffect(() => {
-    chrome.storage.local.get(["userProfile"], (result) => {
-      if (result.userProfile) {
-        setUserProfile(result.userProfile);
-        setIsSetupComplete(true);
-      }
-    });
-  }, []);
+    initializeApp();
+  }, [initializeApp]);
 
-  if (!isSetupComplete) {
-    return (
-      <ProfileSetup
-        onComplete={(profile) => {
-          setUserProfile(profile);
-          setIsSetupComplete(true);
-        }}
-      />
-    );
+  // Render different states
+  switch (appState) {
+    case "onboarding-welcome":
+      return <OnboardingWelcome />;
+    case "onboarding-assessment":
+      return <OnboardingAssessment />;
+    case "onboarding-fine-tuning":
+      return <OnboardingFineTuning />;
+    case "onboarding-live-preview":
+      return <OnboardingLivePreview />;
+    case "onboarding-success":
+      return <OnboardingSuccess />;
+    case "default":
+      return <DefaultState />;
+    case "issues-detected":
+      return <IssuesDetected />;
+    case "custom-input":
+      return <CustomInput />;
+    case "loading":
+      return <LoadingState />;
+    case "changes-applied":
+      return <ChangesApplied />;
+    case "settings":
+      return <SettingsPanel />;
+    default:
+      return <DefaultState />;
   }
-
-  return (
-    <AccessibilityPanel
-      userProfile={userProfile}
-      onEditProfile={() => setIsSetupComplete(false)}
-    />
-  );
 }
 
-function ProfileSetup({ onComplete }: { onComplete: (profile: any) => void }) {
-  const [profile, setProfile] = React.useState({
-    fontSize: "normal",
-    contrast: "normal",
-    motionSensitive: false,
-    screenReader: false
-  });
-
-  const handleSave = async () => {
-    const userProfile = {
-      id: crypto.randomUUID(),
-      ...profile,
-      createdAt: new Date().toISOString()
-    };
-
-    await chrome.storage.local.set({ userProfile });
-    onComplete(userProfile);
-  };
-
+// Base Layout Component
+function ExtensionLayout({
+  children,
+  header,
+  onClose
+}: {
+  children: React.ReactNode;
+  header: React.ReactNode;
+  onClose?: () => void;
+}) {
   return (
-    <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.headerCenter}>
-          <div style={styles.iconContainer}>
-            <span style={{ fontSize: "24px" }}>🤖</span>
-          </div>
-          <h1 style={styles.title}>AI Accessibility</h1>
-          <p style={styles.subtitle}>Let's personalize your experience</p>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div style={styles.content}>
-        <div style={styles.welcomeSection}>
-          <h2 style={styles.welcomeTitle}>Welcome!</h2>
-          <p style={styles.welcomeText}>
-            Tell us about your accessibility needs
-          </p>
-        </div>
-
-        {/* Font Size */}
-        <div style={styles.section}>
-          <label style={styles.label}>Preferred text size</label>
-          <div style={styles.buttonGrid}>
-            {[
-              { value: "normal", label: "Normal" },
-              { value: "large", label: "Large" },
-              { value: "xl", label: "Extra Large" }
-            ].map((option) => (
-              <button
-                key={option.value}
-                onClick={() =>
-                  setProfile((prev) => ({ ...prev, fontSize: option.value }))
-                }
-                style={{
-                  ...styles.button,
-                  ...(profile.fontSize === option.value
-                    ? styles.buttonActive
-                    : {})
-                }}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Contrast */}
-        <div style={styles.section}>
-          <label style={styles.label}>Color contrast preference</label>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: "8px"
-            }}
+    <div className="w-[420px] h-[600px] bg-slate-900 text-white flex flex-col rounded-xl border-2 border-slate-700 overflow-hidden">
+      <div className="flex justify-between items-center p-5 border-b border-slate-700 bg-slate-900">
+        {header}
+        {onClose && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-7 w-7 p-0 text-slate-400 hover:text-white hover:bg-slate-700"
           >
-            {[
-              { value: "normal", label: "Normal" },
-              { value: "high", label: "High Contrast" }
-            ].map((option) => (
-              <button
-                key={option.value}
-                onClick={() =>
-                  setProfile((prev) => ({ ...prev, contrast: option.value }))
-                }
-                style={{
-                  ...styles.button,
-                  ...(profile.contrast === option.value
-                    ? styles.buttonActive
-                    : {})
-                }}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Toggles */}
-        <div style={styles.section}>
-          <div style={styles.toggleContainer}>
-            <span style={styles.toggleLabel}>I use a screen reader</span>
-            <button
-              onClick={() =>
-                setProfile((prev) => ({
-                  ...prev,
-                  screenReader: !prev.screenReader
-                }))
-              }
-              style={{
-                ...styles.toggle,
-                backgroundColor: profile.screenReader ? "#8b5cf6" : "#d1d5db"
-              }}
-            >
-              <span
-                style={{
-                  ...styles.toggleBall,
-                  transform: profile.screenReader
-                    ? "translateX(20px)"
-                    : "translateX(4px)"
-                }}
-              />
-            </button>
-          </div>
-
-          <div style={styles.toggleContainer}>
-            <span style={styles.toggleLabel}>Motion sensitive</span>
-            <button
-              onClick={() =>
-                setProfile((prev) => ({
-                  ...prev,
-                  motionSensitive: !prev.motionSensitive
-                }))
-              }
-              style={{
-                ...styles.toggle,
-                backgroundColor: profile.motionSensitive ? "#8b5cf6" : "#d1d5db"
-              }}
-            >
-              <span
-                style={{
-                  ...styles.toggleBall,
-                  transform: profile.motionSensitive
-                    ? "translateX(20px)"
-                    : "translateX(4px)"
-                }}
-              />
-            </button>
-          </div>
-        </div>
-
-        {/* Save Button */}
-        <button onClick={handleSave} style={styles.mainButton}>
-          Continue
-        </button>
+            ×
+          </Button>
+        )}
       </div>
+      <div className="flex-1 overflow-y-auto">{children}</div>
     </div>
   );
 }
 
-function AccessibilityPanel({
-  userProfile,
-  onEditProfile
-}: {
-  userProfile: any;
-  onEditProfile: () => void;
-}) {
-  const [feedback, setFeedback] = React.useState("");
-  const [isProcessing, setIsProcessing] = React.useState(false);
+// Individual Components with TailwindCSS
 
-  const handleQuickFix = async (type: string) => {
-    setIsProcessing(true);
-    setTimeout(() => {
-      console.log(`Applied ${type} fix`);
-      setIsProcessing(false);
-    }, 1500);
-  };
-
-  const handleCustomFeedback = async () => {
-    if (!feedback.trim()) return;
-    setIsProcessing(true);
-    setTimeout(() => {
-      console.log("Processed feedback:", feedback);
-      setFeedback("");
-      setIsProcessing(false);
-    }, 2000);
-  };
+function OnboardingWelcome() {
+  const { setAppState } = useAccessibilityStore();
 
   return (
-    <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between"
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                backgroundColor: "rgba(255, 255, 255, 0.2)",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
-              <span style={{ fontSize: "20px" }}>🤖</span>
-            </div>
-            <div>
-              <h1
-                style={{
-                  fontSize: "18px",
-                  fontWeight: "600",
-                  color: "white",
-                  margin: 0
-                }}
-              >
-                AI Accessibility
-              </h1>
-              <p
-                style={{
-                  color: "rgba(196, 181, 253, 1)",
-                  fontSize: "12px",
-                  margin: 0
-                }}
-              >
-                How can I help?
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onEditProfile}
-            style={{
-              background: "none",
-              border: "none",
-              color: "rgba(255, 255, 255, 0.8)",
-              cursor: "pointer",
-              fontSize: "16px"
-            }}
-          >
-            ⚙️
-          </button>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div style={styles.content}>
-        {/* Status */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "12px",
-            backgroundColor: "#f0fdf4",
-            borderRadius: "8px",
-            border: "1px solid #bbf7d0",
-            marginBottom: "16px"
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <div
-              style={{
-                width: "8px",
-                height: "8px",
-                backgroundColor: "#22c55e",
-                borderRadius: "50%"
-              }}
-            ></div>
-            <span
-              style={{ fontSize: "14px", fontWeight: "500", color: "#15803d" }}
-            >
-              Ready to help
-            </span>
-          </div>
-          <span style={{ fontSize: "12px", color: "#16a34a" }}>
-            {userProfile?.fontSize?.charAt(0).toUpperCase() +
-              userProfile?.fontSize?.slice(1)}{" "}
-            text
+    <ExtensionLayout
+      header={
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🎯</span>
+          <span className="text-lg font-semibold text-blue-400">
+            AI Accessibility
           </span>
         </div>
+      }
+    >
+      <div className="flex flex-col h-full">
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+          <div className="text-6xl mb-5">🎯</div>
+          <h1 className="text-2xl font-bold mb-3 text-white">
+            AI Accessibility
+          </h1>
+          <p className="text-slate-400 text-base mb-10 leading-relaxed">
+            Make every website easier to use with AI-powered fixes
+          </p>
 
-        {/* Quick Actions */}
-        <div style={styles.section}>
-          <h3
-            style={{
-              fontSize: "14px",
-              fontWeight: "500",
-              color: "#1f2937",
-              marginBottom: "12px"
-            }}
+          <Card className="bg-slate-800 border-slate-600 mb-10 w-full">
+            <CardContent className="p-5">
+              <div className="space-y-3 text-left">
+                {[
+                  {
+                    emoji: "⚡",
+                    text: "Automatically adjusts text size & contrast"
+                  },
+                  { emoji: "🎯", text: "Makes buttons easier to click" },
+                  { emoji: "🤖", text: "Fixes accessibility issues with AI" },
+                  { emoji: "🌐", text: "Works on every website you visit" }
+                ].map((prop, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 text-sm text-slate-300"
+                  >
+                    <span className="text-lg">{prop.emoji}</span>
+                    <span>{prop.text}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="bg-blue-900/50 border border-blue-800 rounded-lg p-4 text-blue-400 text-sm mb-10">
+            💡 Setup takes 60 seconds and makes browsing much easier!
+          </div>
+        </div>
+
+        <div className="p-5 space-y-2">
+          <Button
+            onClick={() => setAppState("onboarding-assessment")}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4"
           >
-            Quick fixes
-          </h3>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: "8px"
-            }}
+            Let's Set It Up
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700"
           >
-            {[
-              { type: "font-size", emoji: "📝", label: "Bigger Text" },
-              { type: "contrast", emoji: "🎨", label: "Better Contrast" },
-              { type: "buttons", emoji: "🔘", label: "Bigger Buttons" },
-              { type: "motion", emoji: "🔄", label: "Reduce Motion" }
-            ].map((action) => (
-              <button
-                key={action.type}
-                onClick={() => handleQuickFix(action.type)}
-                disabled={isProcessing}
-                style={{
-                  padding: "12px",
-                  borderRadius: "8px",
-                  border: "1px solid #e5e7eb",
-                  backgroundColor: "white",
-                  cursor: "pointer",
-                  textAlign: "center" as const,
-                  opacity: isProcessing ? 0.5 : 1
-                }}
+            Skip - Try Basic Mode
+          </Button>
+        </div>
+      </div>
+    </ExtensionLayout>
+  );
+}
+
+function OnboardingAssessment() {
+  const { setAppState } = useAccessibilityStore();
+  const [selectedNeeds, setSelectedNeeds] = React.useState<string[]>([
+    "bigger-text",
+    "better-contrast"
+  ]);
+
+  const needs = [
+    { id: "bigger-text", emoji: "👁", label: "Bigger text" },
+    { id: "better-contrast", emoji: "🎨", label: "Better contrast" },
+    { id: "larger-buttons", emoji: "🖱", label: "Larger buttons" },
+    { id: "screen-reader", emoji: "🔊", label: "Screen reader" },
+    { id: "less-animation", emoji: "🎭", label: "Less animation" },
+    { id: "keyboard-only", emoji: "⌨️", label: "Keyboard only" }
+  ];
+
+  const toggleNeed = (needId: string) => {
+    setSelectedNeeds((prev) =>
+      prev.includes(needId)
+        ? prev.filter((id) => id !== needId)
+        : [...prev, needId]
+    );
+  };
+
+  return (
+    <ExtensionLayout
+      header={
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">🎯</span>
+            <span className="font-semibold text-blue-400">Quick Setup</span>
+          </div>
+          <div className="flex gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+            <div className="w-2 h-2 rounded-full bg-slate-600"></div>
+            <div className="w-2 h-2 rounded-full bg-slate-600"></div>
+          </div>
+        </div>
+      }
+    >
+      <div className="p-5">
+        <div className="mb-6">
+          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wide text-center mb-4">
+            Which of these do you usually need?
+          </h2>
+          <div className="grid grid-cols-2 gap-2.5">
+            {needs.map((need) => (
+              <Card
+                key={need.id}
+                className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
+                  selectedNeeds.includes(need.id)
+                    ? "bg-blue-900 border-blue-400 text-blue-400"
+                    : "bg-slate-700 border-slate-600 hover:border-blue-400"
+                }`}
+                onClick={() => toggleNeed(need.id)}
               >
-                <div style={{ fontSize: "18px", marginBottom: "4px" }}>
-                  {action.emoji}
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center min-h-[90px]">
+                  <div className="text-2xl mb-2">{need.emoji}</div>
+                  <div className="text-sm font-medium">{need.label}</div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="bg-blue-900/50 border border-blue-800 rounded-lg p-4 text-blue-400 text-sm text-center mt-4">
+            Select all that apply • You can change these later
+          </div>
+        </div>
+      </div>
+
+      <div className="p-5 space-y-2 mt-auto">
+        <Button
+          onClick={() => setAppState("onboarding-fine-tuning")}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+        >
+          Continue
+        </Button>
+        <Button
+          onClick={() => setAppState("onboarding-welcome")}
+          variant="outline"
+          className="w-full border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700"
+        >
+          ← Back
+        </Button>
+      </div>
+    </ExtensionLayout>
+  );
+}
+
+function OnboardingFineTuning() {
+  const { setAppState, handleCompleteOnboarding } = useAccessibilityStore();
+  const [fontSize, setFontSize] = React.useState([4]);
+  const [contrast, setContrast] = React.useState([80]);
+
+  const handleComplete = () => {
+    const profile: UserProfile = {
+      id: crypto.randomUUID(),
+      fontSize: fontSize[0] > 6 ? "xl" : fontSize[0] > 2 ? "large" : "normal",
+      contrast: contrast[0] > 60 ? "high" : "normal",
+      motionSensitive: false,
+      screenReader: false,
+      autoApply: true,
+      aiLearning: true,
+      createdAt: new Date().toISOString()
+    };
+    handleCompleteOnboarding(profile);
+  };
+
+  return (
+    <ExtensionLayout
+      header={
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">🎛</span>
+            <span className="font-semibold text-blue-400">Adjust Settings</span>
+          </div>
+          <div className="flex gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+            <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+            <div className="w-2 h-2 rounded-full bg-slate-600"></div>
+          </div>
+        </div>
+      }
+    >
+      <div className="p-5">
+        <div className="space-y-6">
+          {/* Font Size Slider */}
+          <div>
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-sm font-medium">Text Size</span>
+              <Badge variant="secondary" className="bg-slate-700 text-blue-400">
+                +{fontSize[0]}px
+              </Badge>
+            </div>
+            <Slider
+              value={fontSize}
+              onValueChange={setFontSize}
+              max={12}
+              step={1}
+              className="w-full"
+            />
+          </div>
+
+          {/* Contrast Slider */}
+          <div>
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-sm font-medium">Contrast Level</span>
+              <Badge variant="secondary" className="bg-slate-700 text-blue-400">
+                {contrast[0] > 60 ? "High" : "Normal"}
+              </Badge>
+            </div>
+            <Slider
+              value={contrast}
+              onValueChange={setContrast}
+              max={100}
+              step={10}
+              className="w-full"
+            />
+          </div>
+
+          {/* Live Preview */}
+          <Card className="bg-slate-800 border-slate-600">
+            <CardContent className="p-4">
+              <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">
+                Live Preview
+              </div>
+              <div className="text-xs text-slate-400 opacity-60 mb-3">
+                Before: This text might be hard to read for some users
+              </div>
+              <div
+                className="text-white font-semibold"
+                style={{ fontSize: `${14 + fontSize[0]}px` }}
+              >
+                After: This text is much clearer and easier to see!
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div className="p-5 space-y-2 mt-auto">
+        <Button
+          onClick={handleComplete}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+        >
+          Perfect!
+        </Button>
+        <Button
+          onClick={() => setAppState("onboarding-assessment")}
+          variant="outline"
+          className="w-full border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700"
+        >
+          ← Back to Selection
+        </Button>
+      </div>
+    </ExtensionLayout>
+  );
+}
+
+function IssuesDetected() {
+  const { detectedIssues, handleQuickFix, setAppState } =
+    useAccessibilityStore();
+
+  return (
+    <ExtensionLayout
+      header={
+        <div className="flex items-center gap-3">
+          <span className="text-xl">⚠️</span>
+          <span className="font-semibold text-orange-400">Issues Found</span>
+        </div>
+      }
+      onClose={() => setAppState("default")}
+    >
+      <div className="p-5">
+        {/* Page Status */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">
+            Page Status
+          </h3>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 p-3 bg-green-900/30 border-l-4 border-green-500 rounded text-green-400 text-sm">
+              <span>✓</span>
+              <span>Your profile applied</span>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-orange-900/30 border-l-4 border-orange-500 rounded text-orange-400 text-sm">
+              <span>⚠</span>
+              <span>{detectedIssues.length} accessibility issues detected</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Fixes */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">
+            Quick Fixes
+          </h3>
+          <div className="space-y-2.5">
+            <Button
+              onClick={() => handleQuickFix("all")}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold justify-start gap-3 h-14"
+            >
+              <span className="text-lg">⚡</span>
+              <span>Fix All Issues Now</span>
+            </Button>
+
+            <Button
+              onClick={() => handleQuickFix("font-size")}
+              variant="outline"
+              className="w-full border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 justify-start gap-3 h-12"
+            >
+              <span className="text-base">👁</span>
+              <span>Make Text Bigger</span>
+            </Button>
+
+            <Button
+              onClick={() => handleQuickFix("contrast")}
+              variant="outline"
+              className="w-full border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 justify-start gap-3 h-12"
+            >
+              <span className="text-base">🎨</span>
+              <span>Improve Contrast</span>
+            </Button>
+
+            <Button
+              onClick={() => handleQuickFix("click-targets")}
+              variant="outline"
+              className="w-full border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 justify-start gap-3 h-12"
+            >
+              <span className="text-base">🖱</span>
+              <span>Bigger Click Targets</span>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-5 mt-auto">
+        <Button
+          onClick={() => setAppState("custom-input")}
+          variant="outline"
+          className="w-full border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700"
+        >
+          Custom Fix
+        </Button>
+      </div>
+    </ExtensionLayout>
+  );
+}
+
+function CustomInput() {
+  const {
+    customFeedback,
+    setCustomFeedback,
+    handleCustomFeedback,
+    setAppState,
+    isProcessing
+  } = useAccessibilityStore();
+
+  return (
+    <ExtensionLayout
+      header={
+        <div className="flex items-center gap-3">
+          <span className="text-xl">💬</span>
+          <span className="font-semibold text-blue-400">
+            Describe the Problem
+          </span>
+        </div>
+      }
+      onClose={() => setAppState("issues-detected")}
+    >
+      <div className="p-5">
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">
+            What's bothering you?
+          </h3>
+          <Textarea
+            value={customFeedback}
+            onChange={(e) => setCustomFeedback(e.target.value)}
+            placeholder="Example: 'The checkout button is almost invisible' or 'Menu text is too small' or 'This page hurts my eyes'"
+            className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-400 min-h-[100px] resize-none"
+            disabled={isProcessing}
+          />
+        </div>
+      </div>
+
+      <div className="p-5 mt-auto">
+        <Button
+          onClick={handleCustomFeedback}
+          disabled={!customFeedback.trim() || isProcessing}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold disabled:opacity-50"
+        >
+          Generate Fix
+        </Button>
+      </div>
+    </ExtensionLayout>
+  );
+}
+
+function LoadingState() {
+  return (
+    <ExtensionLayout
+      header={
+        <div className="flex items-center gap-3">
+          <span className="text-xl">🧠</span>
+          <span className="font-semibold text-blue-400">AI is thinking...</span>
+        </div>
+      }
+    >
+      <div className="flex-1 flex flex-col items-center justify-center p-6">
+        <div className="w-10 h-10 border-3 border-slate-600 border-t-blue-400 rounded-full animate-spin mb-4"></div>
+        <div className="text-base text-blue-400 mb-2 text-center">
+          Analyzing this page
+        </div>
+        <div className="text-sm text-slate-400 text-center">
+          Finding accessibility issues and generating fixes...
+        </div>
+
+        <div className="bg-blue-900/50 border border-blue-800 rounded-lg p-4 text-blue-400 text-sm text-center mt-5">
+          💡 Our AI is examining the page structure, your preferences, and
+          generating custom CSS fixes.
+        </div>
+      </div>
+    </ExtensionLayout>
+  );
+}
+
+function ChangesApplied() {
+  const { appliedChanges, setAppState, setAppliedChanges } =
+    useAccessibilityStore();
+
+  const handleUndoAll = () => {
+    setAppliedChanges([]);
+    setAppState("issues-detected");
+  };
+
+  return (
+    <ExtensionLayout
+      header={
+        <div className="flex items-center gap-3">
+          <span className="text-xl">✨</span>
+          <span className="font-semibold text-green-400">Changes Applied</span>
+        </div>
+      }
+      onClose={() => setAppState("default")}
+    >
+      <div className="p-5">
+        <div className="bg-green-900/30 border border-green-600 rounded-lg p-4 text-green-400 text-sm text-center mb-6 font-medium">
+          🎉 Great! I've made {appliedChanges.length} improvements to this page.
+        </div>
+
+        {/* What Changed */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">
+            What Changed
+          </h3>
+          <div className="space-y-2">
+            {appliedChanges.map((change) => (
+              <div
+                key={change.id}
+                className="flex items-center justify-between p-3 bg-slate-800 rounded-lg"
+              >
+                <div className="flex items-center gap-3 text-sm">
+                  <span className="text-green-400">✓</span>
+                  <span>{change.description}</span>
                 </div>
-                <div
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: "500",
-                    color: "#374151"
-                  }}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700 text-xs px-3 py-1"
                 >
-                  {action.label}
-                </div>
-              </button>
+                  Undo
+                </Button>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Custom Input */}
-        <div style={styles.section}>
-          <h3
-            style={{
-              fontSize: "14px",
-              fontWeight: "500",
-              color: "#1f2937",
-              marginBottom: "12px"
-            }}
-          >
-            Describe the issue
+        {/* Save Changes */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">
+            Save These Changes?
           </h3>
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
-          >
-            <textarea
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              placeholder="Tell me what's difficult about this page..."
-              style={{
-                width: "100%",
-                height: "80px",
-                padding: "12px",
-                border: "1px solid #d1d5db",
-                borderRadius: "8px",
-                resize: "none" as const,
-                fontSize: "14px",
-                boxSizing: "border-box" as const
-              }}
-              disabled={isProcessing}
-            />
-            <button
-              onClick={handleCustomFeedback}
-              disabled={isProcessing || !feedback.trim()}
-              style={{
-                ...styles.mainButton,
-                opacity: isProcessing || !feedback.trim() ? 0.5 : 1,
-                fontSize: "14px"
-              }}
+          <div className="space-y-2.5">
+            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold justify-start gap-3 h-12">
+              <span className="text-base">🌐</span>
+              <span>Use on All Websites</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 justify-start gap-3 h-12"
             >
-              {isProcessing ? (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "8px"
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "16px",
-                      height: "16px",
-                      border: "2px solid white",
-                      borderTop: "2px solid transparent",
-                      borderRadius: "50%",
-                      animation: "spin 1s linear infinite"
-                    }}
-                  ></div>
-                  <span>AI is thinking...</span>
-                </div>
-              ) : (
-                "Generate Fix"
-              )}
-            </button>
+              <span className="text-base">🏠</span>
+              <span>Only This Website</span>
+            </Button>
           </div>
         </div>
       </div>
-    </div>
+
+      <div className="p-5 mt-auto">
+        <Button
+          onClick={handleUndoAll}
+          variant="destructive"
+          className="w-full bg-red-600 hover:bg-red-700"
+        >
+          Undo All
+        </Button>
+      </div>
+    </ExtensionLayout>
   );
 }
 
+function SettingsPanel() {
+  const { userProfile, setUserProfile, setAppState } = useAccessibilityStore();
+  const [autoApply, setAutoApply] = React.useState(
+    userProfile?.autoApply ?? true
+  );
+  const [aiLearning, setAiLearning] = React.useState(
+    userProfile?.aiLearning ?? true
+  );
+
+  const handleSave = () => {
+    if (userProfile) {
+      const updatedProfile = { ...userProfile, autoApply, aiLearning };
+      setUserProfile(updatedProfile);
+      chrome.storage.local.set({ userProfile: updatedProfile });
+      setAppState("default");
+    }
+  };
+
+  return (
+    <ExtensionLayout
+      header={
+        <div className="flex items-center gap-3">
+          <span className="text-xl">⚙️</span>
+          <span className="font-semibold text-blue-400">Settings</span>
+        </div>
+      }
+      onClose={() => setAppState("default")}
+    >
+      <div className="p-5">
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-4">
+            Your Accessibility Profile
+          </h3>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between py-3 border-b border-slate-700">
+              <div>
+                <div className="font-medium text-sm">
+                  Auto-apply on all websites
+                </div>
+                <div className="text-xs text-slate-400">
+                  Automatically improve every page you visit
+                </div>
+              </div>
+              <Switch checked={autoApply} onCheckedChange={setAutoApply} />
+            </div>
+
+            <div className="flex items-center justify-between py-3 border-b border-slate-700">
+              <div>
+                <div className="font-medium text-sm">AI learning mode</div>
+                <div className="text-xs text-slate-400">
+                  Let AI learn from your feedback
+                </div>
+              </div>
+              <Switch checked={aiLearning} onCheckedChange={setAiLearning} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-5 mt-auto space-y-2">
+        <Button
+          onClick={handleSave}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+        >
+          Save Changes
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700"
+        >
+          Reset Profile
+        </Button>
+      </div>
+    </ExtensionLayout>
+  );
+}
+
+// Default and other states (simplified for brevity)
+function DefaultState() {
+  const { userProfile, setAppState } = useAccessibilityStore();
+
+  return (
+    <ExtensionLayout
+      header={
+        <div className="flex items-center gap-3">
+          <span className="text-xl">🤖</span>
+          <span className="font-semibold text-blue-400">AI Accessibility</span>
+        </div>
+      }
+      onClose={() => setAppState("settings")}
+    >
+      <div className="p-5">
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">
+            Page Status
+          </h3>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 p-3 bg-green-900/30 border-l-4 border-green-500 rounded text-green-400 text-sm">
+              <span>✓</span>
+              <span>Your profile applied automatically</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-2.5">
+          <Button
+            onClick={() => setAppState("issues-detected")}
+            variant="outline"
+            className="w-full border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 justify-start gap-3 h-12"
+          >
+            <span className="text-base">🔍</span>
+            <span>Scan for More Issues</span>
+          </Button>
+
+          <Button
+            onClick={() => setAppState("custom-input")}
+            variant="outline"
+            className="w-full border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 justify-start gap-3 h-12"
+          >
+            <span className="text-base">💬</span>
+            <span>Something Still Bothering You?</span>
+          </Button>
+        </div>
+      </div>
+    </ExtensionLayout>
+  );
+}
+
+// Placeholder components for other states
+function OnboardingLivePreview() {
+  return <div className="text-center p-8">Loading preview...</div>;
+}
+
+function OnboardingSuccess() {
+  return <div className="text-center p-8">Success!</div>;
+}
+
+// Initialize the app
 const container = document.getElementById("popup-root");
 if (container) {
   const root = createRoot(container);
