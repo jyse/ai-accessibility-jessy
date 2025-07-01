@@ -2,25 +2,22 @@
   "manifest_version": 3,
   "name": "AI Accessibility Assistant",
   "version": "1.0.0",
-  "description": "AI-powered accessibility improvements for websites",
-
+  "description": "AI-powered accessibility improvements for any website",
   "permissions": ["activeTab", "storage", "scripting"],
-
   "host_permissions": ["http://localhost:3000/*"],
-
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "index.html",
     "default_title": "AI Accessibility Assistant"
   },
-
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline';"
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "run_at": "document_idle"
+      "js": ["content.js"]
     }
   ],
-
   "background": {
     "service_worker": "background.js"
   }
