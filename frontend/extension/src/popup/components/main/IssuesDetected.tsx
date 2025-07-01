@@ -79,7 +79,7 @@ export function IssuesDetected() {
               onClick={() => handleQuickFix("all")}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold justify-start gap-3 h-14"
             >
-              <span className="text-lg">⚡</span>
+              <span className="text-base">⚡</span>
               <span>Fix All Issues Now</span>
             </Button>
 

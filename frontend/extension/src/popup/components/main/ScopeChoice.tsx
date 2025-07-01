@@ -32,7 +32,7 @@ export function ScopeChoice() {
   return (
     <div className="w-[420px] h-[600px] bg-white flex flex-col">
       {/* Header */}
-      <div className="border-b border-gray-200 p-6">
+      <div className="border-b border-gray-200 p-3">
         <div className="flex items-center justify-center mb-4">
           <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
             <Globe className="w-6 h-6 text-blue-600" />
@@ -49,7 +49,7 @@ export function ScopeChoice() {
       </div>
 
       {/* Applied Change Preview */}
-      <div className="p-6 bg-gray-50 border-b border-gray-200">
+      <div className="p-3 bg-gray-50 border-b border-gray-200">
         <div className="bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex items-start space-x-3">
             <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
@@ -67,7 +67,7 @@ export function ScopeChoice() {
       </div>
 
       {/* Choice Options */}
-      <div className="flex-1 p-6 space-y-4">
+      <div className="flex-1 p-3 space-y-4">
         {/* All Websites Option */}
         <button
           onClick={handleGlobalChoice}
@@ -138,7 +138,7 @@ export function ScopeChoice() {
       </div>
 
       {/* Bottom Actions */}
-      <div className="border-t border-gray-200 p-6">
+      <div className="border-t border-gray-200 p-3">
         <div className="flex space-x-3">
           <button
             onClick={handleCancel}

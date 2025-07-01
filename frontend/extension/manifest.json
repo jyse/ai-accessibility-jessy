@@ -3,8 +3,8 @@
   "name": "AI Accessibility Assistant",
   "version": "1.0.0",
   "description": "AI-powered accessibility improvements for any website",
-  "permissions": ["activeTab", "storage", "scripting"],
-  "host_permissions": ["http://localhost:3000/*"],
+  "permissions": ["activeTab", "storage", "scripting", "tabs"],
+  "host_permissions": ["http://localhost:3000/*", "<all_urls>"],
   "action": {
     "default_popup": "index.html",
     "default_title": "AI Accessibility Assistant"

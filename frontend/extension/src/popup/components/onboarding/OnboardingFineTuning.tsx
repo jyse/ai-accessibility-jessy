@@ -44,7 +44,7 @@ export function OnboardingFineTuning() {
       }
     >
       <div className="p-5">
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* Font Size Slider */}
           <div>
             <div className="flex justify-between items-center mb-3">

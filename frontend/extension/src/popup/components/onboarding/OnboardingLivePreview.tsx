@@ -12,7 +12,7 @@ export function OnboardingLivePreview() {
         </div>
       }
     >
-      <div className="flex-1 flex flex-col items-center justify-center p-6">
+      <div className="flex-1 flex flex-col items-center justify-center p-3">
         <div className="w-10 h-10 border-3 border-slate-600 border-t-blue-400 rounded-full animate-spin mb-4"></div>
         <div className="text-base text-blue-400 mb-2 text-center">
           Applying your settings

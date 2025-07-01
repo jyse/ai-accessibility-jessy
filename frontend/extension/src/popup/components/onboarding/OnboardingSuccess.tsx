@@ -22,7 +22,7 @@ export function OnboardingSuccess() {
       }
     >
       <div className="flex flex-col h-full">
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+        <div className="flex-1 flex flex-col items-center justify-center p-3 text-center">
           <div className="text-6xl mb-5">🚀</div>
           <h1 className="text-2xl font-bold mb-3 text-white">
             You're all set!
@@ -32,7 +32,8 @@ export function OnboardingSuccess() {
           </p>
 
           <div className="bg-green-900/30 border border-green-600 rounded-lg p-4 text-green-400 text-sm text-center mb-10 font-medium">
-            🎉 Great! I've applied your preferences to this page. Notice the difference?
+            🎉 Great! I've applied your preferences to this page. Notice the
+            difference?
           </div>
 
           <div className="bg-slate-800 border-slate-600 rounded-lg p-5 w-full text-left">

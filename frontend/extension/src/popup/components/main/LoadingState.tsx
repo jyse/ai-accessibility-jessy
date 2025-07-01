@@ -21,7 +21,7 @@ export function LoadingState() {
         </div>
       }
     >
-      <div className="flex-1 flex flex-col items-center justify-center p-6">
+      <div className="flex-1 flex flex-col items-center justify-center p-3">
         {/* Loading Spinner */}
         <div className="relative mb-6">
           <div className="w-16 h-16 border-4 border-slate-600 border-t-blue-400 rounded-full animate-spin"></div>
@@ -32,7 +32,7 @@ export function LoadingState() {
 
         {/* Loading Steps */}
         <div className="text-center space-y-3 mb-8">
-          <div className="text-lg text-blue-400 font-medium">
+          <div className="text-base text-blue-400 font-medium">
             Analyzing this page
           </div>
           <div className="text-sm text-slate-400 max-w-sm">

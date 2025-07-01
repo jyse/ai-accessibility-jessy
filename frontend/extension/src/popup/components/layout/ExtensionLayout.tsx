@@ -14,21 +14,24 @@ export function ExtensionLayout({
   onClose
 }: ExtensionLayoutProps) {
   return (
-    <div className="w-[420px] h-[600px] bg-slate-900 text-white flex flex-col rounded-xl border-2 border-slate-700 overflow-hidden">
-      <div className="flex justify-between items-center p-5 border-b border-slate-700 bg-slate-900">
+    <div className="w-[420px] max-h-[600px] flex flex-col overflow-hidden bg-[#111827] text-white rounded-2xl border border-zinc-800 shadow-xl font-sans">
+      <div className="flex justify-between items-center px-4 py-3 border-b border-zinc-700 bg-[#111827]">
         {header}
         {onClose && (
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="h-7 w-7 p-0 text-slate-400 hover:text-white hover:bg-slate-700"
+            className="h-7 w-7 p-0 text-zinc-400 hover:text-white hover:bg-zinc-700"
           >
             ×
           </Button>
         )}
       </div>
-      <div className="flex-1 overflow-y-auto">{children}</div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 text-sm leading-relaxed">
+        {children}
+      </div>
     </div>
   );
 }

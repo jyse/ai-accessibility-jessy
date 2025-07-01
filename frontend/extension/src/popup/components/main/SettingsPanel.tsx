@@ -166,11 +166,13 @@ export function SettingsPanel() {
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-800 rounded-lg p-3 text-center">
-                <div className="text-lg font-semibold text-blue-400">42</div>
+                <div className="text-base font-semibold text-blue-400">42</div>
                 <div className="text-xs text-slate-400">Pages Improved</div>
               </div>
               <div className="bg-slate-800 rounded-lg p-3 text-center">
-                <div className="text-lg font-semibold text-green-400">156</div>
+                <div className="text-base font-semibold text-green-400">
+                  156
+                </div>
                 <div className="text-xs text-slate-400">Issues Fixed</div>
               </div>
             </div>

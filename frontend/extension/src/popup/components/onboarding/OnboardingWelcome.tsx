@@ -13,14 +13,14 @@ export function OnboardingWelcome() {
       header={
         <div className="flex items-center gap-3">
           <span className="text-2xl">🎯</span>
-          <span className="text-lg font-semibold text-blue-400">
+          <span className="text-base font-semibold text-blue-400">
             AI Accessibility
           </span>
         </div>
       }
     >
       <div className="flex flex-col h-full">
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+        <div className="flex-1 flex flex-col items-center justify-center p-3 text-center">
           <div className="text-6xl mb-5">🎯</div>
           <h1 className="text-2xl font-bold mb-3 text-white">
             AI Accessibility
@@ -45,7 +45,7 @@ export function OnboardingWelcome() {
                     key={i}
                     className="flex items-center gap-3 text-sm text-slate-300"
                   >
-                    <span className="text-lg">{prop.emoji}</span>
+                    <span className="text-base">{prop.emoji}</span>
                     <span>{prop.text}</span>
                   </div>
                 ))}

@@ -23,3 +23,8 @@
     --ring: 224.3 76.3% 94.1%;
   }
 }
+
+html,
+body {
+  @apply m-0 p-0 w-full h-full overflow-hidden;
+}
